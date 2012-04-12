@@ -6,8 +6,6 @@ fringe = []
 
 def formatter():
 
-    
-    
 
 
     #Get cantus firmus from user
@@ -265,6 +263,9 @@ class Node(object):
             node = node.parent
         return list(reversed(path_back))
 
+    def nodeNotes(self):
+        return (repr(self.cantus) + " " + repr(self.note))
+        
 
 
 
