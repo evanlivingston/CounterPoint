@@ -1,11 +1,12 @@
 import random
+from scoreMaker import scoreMaker
+import math
 
 #Create Fringe list
 fringe = []
 
 
 def formatter():
-
 
 
     #Get cantus firmus from user
@@ -17,35 +18,14 @@ def formatter():
             cantusFirmus.append(int(note))
             
         cantusFirmus.printCantus()
-#        findFirstNote(cantusFirmus.getNote(0))
-        
-
-
-    def inRange(cantusNote, note):
-        if cantusNote + note <= 81:
-            return True
-        else:
-            return False
-        
-    
-    def findFirstNote(cantusNote):
-       
-        melodicPossibilities = [0,7,12,19,24]
-
-        for n in melodicPossibilities:
-            if inRange(cantusNote, n):
-                x = Node(0, n)
-                fringe.append(x)
-        print(fringe)
-
-
-
 
     userInput()
 
     
 #-------------------------------------------------------------------------------
 class Problem(object):
+
+    
 
     def __init__(self, initial, goal=None):
         """The constructor specifies the initial state, and possibly a goal
@@ -59,19 +39,53 @@ class Problem(object):
         return state 
 
 
-    def actions(self, state, interval):
+    def actions(self, state, interval, nodePath):
+        CanNote = cantusFirmus.cantusFirmus[state]
+        
+        parentNode = nodePath[len(nodePath)-1]
+
         self.interval = interval
         intervals = []
         if state == 0:
             melodicPossibilities = [0,7,12,19,24]
+            for n in melodicPossibilities:
+                "test for in range"
+                if problem.in_range(CanNote, n):
+                    intervals.append(n)
+
+        elif state <= 3:
+            melodicPossibilities = [3,4,7,8,9,12]
+            for n in melodicPossibilities:
+                "test for in range"
+                if problem.in_range(CanNote, n):
+                    "test for parallel perfect intervals"
+                    if problem.motion(parentNode, CanNote, n): 
+                        intervals.append(n)
+                        
+        elif state == len(cantusFirmus.cantusFirmus) - 1:
+            melodicPossibilities = [0,12,24]
+            for n in melodicPossibilities:
+                "test for in range"
+                if problem.in_range(CanNote, n):
+                    intervals.append(n)
+
+        elif state == len(cantusFirmus.cantusFirmus) - 2:
+            melodicPossibilities = [4,9]
+            for n in melodicPossibilities:
+                "test for in range"
+                if problem.in_range(CanNote, n):
+                    intervals.append(n)
+                              
+        
         else:
             melodicPossibilities = [3,4,7,8,9,12]
-
-        for n in melodicPossibilities:
-            "if new node is not higher than a5 and interval is not same as last interval"
-            if (n + cantusFirmus.getNote(state-1) <= 81):
-                if (self.interval is not n):                   
-                    intervals.append(n)
+            for n in melodicPossibilities:
+                "test for in range"
+                if problem.in_range(cantusFirmus.getNote(state-1), n):
+                    "test for parallel perfect intervals"
+                    if problem.motion(parentNode, CanNote, n): 
+                        intervals.append(n)
+                                      
         return intervals
 
     def goal_test(self, node):
@@ -88,10 +102,62 @@ class Problem(object):
             return False
 
 #---Counterpoint tests here
+        
     def highest_melody_test(self):
         return True
-        
 
+    def in_range(self, cantusNote, n):
+        if (n + cantusNote) <= 81:
+            return True
+        else:
+            return False
+
+    def consecutive_ns(self, interval, n):
+        gPNn = parentNode.interval
+        if n == gPNn:
+            return False
+        else:
+            return True
+
+
+    def motion(self, parentNode, canNote, n):
+        note = (canNote + n)
+        can = canNote
+        pNote = parentNode.note
+        pCan = parentNode.cantus
+        melodyMotion = (note - pNote)
+        cantusMotion = (can - pCan)
+        perfectNs = [0,7,12,19,24]
+
+        if cantusMotion < 0 and melodyMotion > 0:
+            return "contrary"
+
+        elif cantusMotion > 0 and melodyMotion < 0:
+            return "contrary"
+
+        elif cantusMotion == 0 and melodyMotion != 0:
+            return "oblique"
+
+        elif cantusMotion !=0 and melodyMotion == 0:
+            return "oblique"
+
+        elif cantusMotion > 0 and melodyMotion > 0:
+            "parallel"
+            if n in perfectNs:
+                return False
+            else:
+                return True
+            
+        elif cantusMotion < 0 and melodyMotion < 0:
+            "parallel"
+            if n in perfectNs:
+                return False
+            else:
+                return True
+        
+            
+        
+ 
 #-------------------------------------------------------------------------------
 
 class CantusFirmus(object):
@@ -248,7 +314,7 @@ class Node(object):
     def expand(self, problem):
         "List the nodes reachable in one step from this node."
         return [self.child_node(problem, action)
-            for action in problem.actions(self.state, self.interval)]
+            for action in problem.actions(self.state, self.interval, Node.path(self))]
 
     def child_node(self, problem, action):
         "Fig. 3.10"
@@ -263,9 +329,31 @@ class Node(object):
             node = node.parent
         return list(reversed(path_back))
 
-    def nodeNotes(self):
-        return (repr(self.cantus) + " " + repr(self.note))
+    def prettyCantus(self):
+        "return cantus firmus for lilypond"
+        return int((repr(self.cantus)))
+
+    def prettyCounter(self):
+        "return Counter Point for lilypond"
+        return int((repr(self.note)))
+
+
+    def Output(self, node):
+        "make local copy node path"
+        exercise = node.path()
+        "remove root node"
+        del exercise[0]
+        formatter = scoreMaker
+
+        for i in exercise:
+            z = (i.prettyCantus())
+            formatter.appendCantus(1, z)
         
+        for i in exercise:
+            z = (i.prettyCounter())
+            formatter.appendCounter(1, z)
+
+        formatter.write()
 
 
 
@@ -288,7 +376,6 @@ def tree_search(problem, frontier):
     return None
 
 
-
 def breadth_first_tree_search(problem):
     "Search the shallowest nodes in the search tree first."
     return tree_search(problem, FIFOQueue())
@@ -298,10 +385,7 @@ def depth_first_tree_search(problem):
     "Search the deepest nodes in the search tree first."
     return tree_search(problem, Stack())
 
-def print_one():
-    x = Frontier()
-    z = tree_search1(problem,x)
-    for x in z.path(): print(x)
+
 
 #-------------------------------------------------------------------------------
 
@@ -367,7 +451,7 @@ class PriorityQueue(Queue):
         else:
             return self.A.pop()[1]
 
-    def __getitem__(self, key):
+    def __get__getitem__item__(self, key):
         for _, item in self.A:
             if item == key:
                 return item
