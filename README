@@ -1,1 +1,43 @@
-Artificial Intelligence romps
+h1. <<Counter Point>>
+
+<<This project contains my ongoing research of applying machine learning conepts to species counter point exercises.>>
+
+h2. Use
+
+*lilypond is required to output results in score and midi format
+
+When the script is execute,tThe user will be automatically requested to input a cantus firmus. The format is midi note numbers. An example cantus firmus in the key of C is:
+bc. 60, 64, 65, 67, 64, 69, 67, 64, 65, 64, 62, 60
+
+To start a search:
+bc.  x = depth_first_tree_search(problem)
+
+To see the terminal node:
+bc.  x
+
+To see the path to this node, which will be a complete cantus firmus exercise:
+bc x.path()
+
+To create pdf output and .midi  file
+bc. x.Output(x)
+
+
+for i in x.path(): print(i)
+
+
+node  cantus  counter interval
+  |     |       /      /
+  |     |     /      /
+  \     |    /     /
+   \    |   |    /
+    \   |  /   / 
+     \  | |  /
+      | | | |
+==========================
+<node 0,0,0,0>
+<node 1,1,25,24>
+<node 2,2,14,12>
+<node 3,3,12,9>
+<node 4,4,16,12>
+<node 5,5,14,9>
+<node 6,6,18,12>
